@@ -29,12 +29,10 @@ void TwoEncoderImuOdom::update() {
     const float rawDx = m_horzTracker->getChange();
     const float rawDy = m_leftTracker->getChange();
 
-    float localDx, localDy;
-
-    if (deltaHeading == 0) {
-        localDx = rawDx;
-        localDy = rawDy;
-    } else {
+    float localDx = rawDx;
+    float localDy = rawDy;
+    
+    if (deltaHeading != 0) {
         const float arcToLine = 2 * std::sin(deltaHeading / 2);
         localDx = arcToLine * (rawDx / deltaHeading + m_horzTracker->getOffset());
         localDy = arcToLine * (rawDy / deltaHeading + m_leftTracker->getOffset());
