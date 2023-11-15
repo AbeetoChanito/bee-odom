@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-TrackingWheel::TrackingWheel(float offset) : m_offset(offset) {}
+TrackingWheel::TrackingWheel(float offset)
+    : m_offset(offset) {}
 
 float TrackingWheel::getOffset() const { return m_offset; }
 
@@ -19,7 +20,10 @@ void TrackingWheel::tare() {
 }
 
 MotorTracker::MotorTracker(std::shared_ptr<pros::MotorGroup> motor, float wheelDiameter, float rpm, float offset)
-    : TrackingWheel(offset), m_motor(motor), m_wheelDiameter(wheelDiameter), m_rpm(rpm) {}
+    : TrackingWheel(offset),
+      m_motor(motor),
+      m_wheelDiameter(wheelDiameter),
+      m_rpm(rpm) {}
 
 void MotorTracker::tareDevice() { m_motor->tare_position(); }
 
@@ -51,7 +55,10 @@ float MotorTracker::getPosition() const {
 
 RotationTracker::RotationTracker(std::shared_ptr<pros::Rotation> rotation, float wheelDiameter, float gearRatio,
                                  float offset)
-    : TrackingWheel(offset), m_rotation(rotation), m_wheelDiameter(wheelDiameter), m_gearRatio(gearRatio) {}
+    : TrackingWheel(offset),
+      m_rotation(rotation),
+      m_wheelDiameter(wheelDiameter),
+      m_gearRatio(gearRatio) {}
 
 void RotationTracker::tareDevice() { m_rotation->reset_position(); }
 

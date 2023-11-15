@@ -12,7 +12,9 @@ void Odom::setPose(const Pose& pose) { m_pose = pose; }
 
 TwoEncoderImuOdom::TwoEncoderImuOdom(std::shared_ptr<TrackingWheel> leftTracker,
                                      std::shared_ptr<TrackingWheel> horzTracker, std::shared_ptr<Gyro> gyro)
-    : m_leftTracker(leftTracker), m_horzTracker(horzTracker), m_gyro(gyro) {}
+    : m_leftTracker(leftTracker),
+      m_horzTracker(horzTracker),
+      m_gyro(gyro) {}
 
 void TwoEncoderImuOdom::calibrate() {
     m_leftTracker->tare();
@@ -21,11 +23,11 @@ void TwoEncoderImuOdom::calibrate() {
 }
 
 void TwoEncoderImuOdom::update() {
-    float deltaHeading = degToRad(m_gyro->getChange());
-    float avgHeading = m_pose.theta + deltaHeading / 2;
+    const float deltaHeading = degToRad(m_gyro->getChange());
+    const float avgHeading = m_pose.theta + deltaHeading / 2;
 
-    float rawDx = m_horzTracker->getChange();
-    float rawDy = m_leftTracker->getChange();
+    const float rawDx = m_horzTracker->getChange();
+    const float rawDy = m_leftTracker->getChange();
 
     float localDx, localDy;
 

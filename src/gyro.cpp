@@ -7,7 +7,8 @@ float Gyro::getChange() {
     return change;
 }
 
-V5Gyro::V5Gyro(std::shared_ptr<pros::IMU> imu) : m_imu(imu) {}
+V5Gyro::V5Gyro(std::shared_ptr<pros::IMU> imu)
+    : m_imu(imu) {}
 
 void V5Gyro::calibrate() { m_imu->reset(true); }
 

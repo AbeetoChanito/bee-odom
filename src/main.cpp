@@ -4,17 +4,10 @@
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-std::shared_ptr<pros::MotorGroup> leftMotors =
-    std::make_shared<pros::MotorGroup>(std::initializer_list<pros::Motor> {
-        pros::Motor(-19, pros::E_MOTOR_GEAR_BLUE),
-        pros::Motor(-20, pros::E_MOTOR_GEAR_BLUE)
-    });
-std::shared_ptr<pros::MotorGroup> rightMotors =
-    std::make_shared<pros::MotorGroup>(std::initializer_list<pros::Motor> {
-        pros::Motor(11, pros::E_MOTOR_GEAR_BLUE),
-        pros::Motor(12, pros::E_MOTOR_GEAR_BLUE)
-    });
-    
+std::shared_ptr<pros::MotorGroup> leftMotors = std::make_shared<pros::MotorGroup>(std::initializer_list<pros::Motor> {
+    pros::Motor(-19, pros::E_MOTOR_GEAR_BLUE), pros::Motor(-20, pros::E_MOTOR_GEAR_BLUE)});
+std::shared_ptr<pros::MotorGroup> rightMotors = std::make_shared<pros::MotorGroup>(std::initializer_list<pros::Motor> {
+    pros::Motor(11, pros::E_MOTOR_GEAR_BLUE), pros::Motor(12, pros::E_MOTOR_GEAR_BLUE)});
 
 std::shared_ptr<pros::IMU> imu = std::make_shared<pros::IMU>(2);
 std::shared_ptr<Gyro> gyro = std::make_shared<V5Gyro>(imu);
@@ -34,9 +27,7 @@ std::shared_ptr<Odom> odom = std::make_shared<TwoEncoderImuOdom>(rightTracker, h
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
-    pros::lcd::initialize();
-}
+void initialize() { pros::lcd::initialize(); }
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -56,9 +47,7 @@ void disabled() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
-    
-}
+void autonomous() {}
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -112,9 +101,9 @@ void opcontrol() {
     // gyro->calibrate();
 
     // constexpr float TURNS = 10;
-    
+
     // float gyroPos;
-    
+
     // leftMotors->move_velocity(50);
     // rightMotors->move_velocity(-50);
 
@@ -129,6 +118,7 @@ void opcontrol() {
 
     // const float POSITION_TO_RADIUS = gyro->getRotation() / 180 * M_PI;
 
-    // pros::lcd::print(1, "%f", (leftTracker->getPosition() - rightTracker->getPosition()) / POSITION_TO_RADIUS); // track width
-    // pros::lcd::print(2, "%f", horzTracker->getPosition() / POSITION_TO_RADIUS); // tracking point to horz tracker
+    // pros::lcd::print(1, "%f", (leftTracker->getPosition() - rightTracker->getPosition()) / POSITION_TO_RADIUS); //
+    // track width pros::lcd::print(2, "%f", horzTracker->getPosition() / POSITION_TO_RADIUS); // tracking point to horz
+    // tracker
 }
