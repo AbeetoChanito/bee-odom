@@ -1,6 +1,13 @@
 #include "main.h"
 
+#include "control.hpp"
 #include "odom.hpp"
+
+#include "Graphy/Grapher.hpp"
+#include "okapi/api/units/QTime.hpp"
+#include "pros/colors.h"
+
+#include <memory>
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -12,14 +19,19 @@ std::shared_ptr<pros::MotorGroup> rightMotors = std::make_shared<pros::MotorGrou
 std::shared_ptr<pros::IMU> imu = std::make_shared<pros::IMU>(2);
 std::shared_ptr<Gyro> gyro = std::make_shared<V5Gyro>(imu);
 
-std::shared_ptr<TrackingWheel> leftTracker = std::make_shared<MotorTracker>(leftMotors, 3.25, 400, -6.1);
-std::shared_ptr<TrackingWheel> rightTracker = std::make_shared<MotorTracker>(rightMotors, 3.25, 400, 6.1);
+constexpr float HALF_TRACK = 11.725 / 2;
+
+std::shared_ptr<TrackingWheel> leftTracker = std::make_shared<MotorTracker>(leftMotors, 3.25, 400, -HALF_TRACK);
+std::shared_ptr<TrackingWheel> rightTracker = std::make_shared<MotorTracker>(rightMotors, 3.25, 400, HALF_TRACK);
 
 std::shared_ptr<pros::Rotation> rotation = std::make_shared<pros::Rotation>(3, true);
 
-std::shared_ptr<TrackingWheel> horzTracker = std::make_shared<RotationTracker>(rotation, 2.744, 1, -2.2);
+std::shared_ptr<TrackingWheel> horzTracker = std::make_shared<RotationTracker>(rotation, 2.744, 1, -8.476);
 
 std::shared_ptr<Odom> odom = std::make_shared<TwoEncoderImuOdom>(rightTracker, horzTracker, gyro);
+
+std::unique_ptr<TimeSettler> lateralTimeSettler = std::make_unique<TimeSettler>(0, 0, 0, 0, 10000);
+std::unique_ptr<PID> lateralPID = std::make_unique<PID>(0, 0, 0, 0, std::move(lateralTimeSettler));
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -86,39 +98,33 @@ void competition_initialize() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-    odom->calibrate();
-    odom->setPose({0, 0, 0});
+    graphy::AsyncGrapher grapher("Lateral PID");
+    
+    grapher.setRefreshRate(10 * okapi::millisecond);
+    grapher.addDataType("Target", COLOR_ORANGE);
+    grapher.addDataType("Actual", COLOR_AQUAMARINE);
+    grapher.startTask();
+
+    leftTracker->tare();
+    rightTracker->tare();
+
+    float target = 24;
 
     while (true) {
-        odom->update();
-        Pose currentPose = odom->getPose();
-        pros::lcd::print(1, "X: %f", currentPose.x);
-        pros::lcd::print(2, "Y: %f", currentPose.y);
-        pros::lcd::print(3, "Theta: %f", currentPose.theta);
-        pros::delay(20);
+        std::optional<float> pidOutput = lateralPID->update(target - (leftTracker->getPosition() + rightTracker->getPosition()) / 2);
+
+        if (!pidOutput.has_value()) {
+            break;
+        }
+
+        grapher.update("Target", target);
+        grapher.update("Actual", pidOutput.value());
+
+        leftMotors->move(pidOutput.value());
+        rightMotors->move(pidOutput.value());
+        pros::delay(10);
     }
-    // pros::lcd::print(1, "Calibrating...");
-    // gyro->calibrate();
 
-    // constexpr float TURNS = 10;
-
-    // float gyroPos;
-
-    // leftMotors->move_velocity(50);
-    // rightMotors->move_velocity(-50);
-
-    // do {
-    //     gyroPos = gyro->getRotation();
-    //     pros::lcd::print(1, "Percent completed: %f", gyroPos / (360 * TURNS) * 100);
-    //     pros::delay(20);
-    // } while (gyroPos < 360 * TURNS);
-
-    // leftMotors->move_velocity(0);
-    // rightMotors->move_velocity(0);
-
-    // const float POSITION_TO_RADIUS = gyro->getRotation() / 180 * M_PI;
-
-    // pros::lcd::print(1, "%f", (leftTracker->getPosition() - rightTracker->getPosition()) / POSITION_TO_RADIUS); //
-    // track width pros::lcd::print(2, "%f", horzTracker->getPosition() / POSITION_TO_RADIUS); // tracking point to horz
-    // tracker
+    leftMotors->move(0);
+    rightMotors->move(0);
 }
