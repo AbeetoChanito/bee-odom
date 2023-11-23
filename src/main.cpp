@@ -3,10 +3,6 @@
 #include "control.hpp"
 #include "odom.hpp"
 
-#include "Graphy/Grapher.hpp"
-#include "okapi/api/units/QTime.hpp"
-#include "pros/colors.h"
-
 #include <memory>
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -29,9 +25,6 @@ std::shared_ptr<pros::Rotation> rotation = std::make_shared<pros::Rotation>(3, t
 std::shared_ptr<TrackingWheel> horzTracker = std::make_shared<RotationTracker>(rotation, 2.744, 1, -8.476);
 
 std::shared_ptr<Odom> odom = std::make_shared<TwoEncoderImuOdom>(rightTracker, horzTracker, gyro);
-
-std::unique_ptr<TimeSettler> lateralTimeSettler = std::make_unique<TimeSettler>(0, 0, 0, 0, 10000);
-std::unique_ptr<PID> lateralPID = std::make_unique<PID>(0, 0, 0, 0, std::move(lateralTimeSettler));
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -98,33 +91,5 @@ void competition_initialize() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-    graphy::AsyncGrapher grapher("Lateral PID");
     
-    grapher.setRefreshRate(10 * okapi::millisecond);
-    grapher.addDataType("Target", COLOR_ORANGE);
-    grapher.addDataType("Actual", COLOR_AQUAMARINE);
-    grapher.startTask();
-
-    leftTracker->tare();
-    rightTracker->tare();
-
-    float target = 24;
-
-    while (true) {
-        std::optional<float> pidOutput = lateralPID->update(target - (leftTracker->getPosition() + rightTracker->getPosition()) / 2);
-
-        if (!pidOutput.has_value()) {
-            break;
-        }
-
-        grapher.update("Target", target);
-        grapher.update("Actual", pidOutput.value());
-
-        leftMotors->move(pidOutput.value());
-        rightMotors->move(pidOutput.value());
-        pros::delay(10);
-    }
-
-    leftMotors->move(0);
-    rightMotors->move(0);
 }
